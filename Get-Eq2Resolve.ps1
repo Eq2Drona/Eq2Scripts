@@ -20,12 +20,15 @@ set up your own service ID for free at:
 
   https://census.daybreakgames.com/#devSignup
 
+.parameter CsvFileName
+Name of the csv file.
+
 .outputs
   Resolve
 
 .example
 
-.\Get-Eq2Resolve.ps1 CharacterList.txt -ServerName Thurgadin -ServiceId eq2drona
+.\Get-Eq2Resolve.ps1 CharacterList.txt -ServerName Thurgadin -ServiceId eq2drona -CsvFileName Eq2Resolve.csv
 
 .link
 https://github.com/Eq2Drona/Eq2Scripts
@@ -38,7 +41,7 @@ param (
 	[string]$FileName = "CharacterList.txt",
 	[string]$ServerName = "Thurgadin",
 	[string]$ServiceId = "eq2drona",
-	[long[]]$ExtraIds = @()
+	[string]$CsvFileName = "Eq2Resolve.csv"
 )
 
 if ($ServiceId) { $ServiceId = '/s:' + $ServiceId }
@@ -95,6 +98,7 @@ foreach ($toonName  in $CharacterList) {
 	# Printer a header for the first time
 	if ($ShouldPrintHeader) {
 		$headerLine = "Name        Resolve "
+		$headerLineCsv = "Name,Resolve,"
 		foreach ($EquipmentSlot in $EquipmentSlotList) {
 			$displayname = $EquipmentSlot.displayname
 			If ($displayname -NotIn $Ignore) {
@@ -103,9 +107,11 @@ foreach ($toonName  in $CharacterList) {
 				}
 				
 				$headerLine += "{0} " -f $displayname.PadRight($MaxLength," ")
+				$headerLineCsv += "{0}," -f $displayname
 			}
 		}
 		Write-Host ($headerLine) -ForegroundColor Yellow
+		$headerLineCsv | Set-Content $CsvFileName
 		
 		$ShouldPrintHeader = $false
 	}
@@ -116,14 +122,17 @@ foreach ($toonName  in $CharacterList) {
 	$toonName = $toonName.PadRight(11," ")
 
 	$resolveLine = "$toonName {0:F0}    " -f $TotalResolve
+	$resolveLineCsv = "$toonName,{0:F0}," -f $TotalResolve
 	foreach ($EquipmentSlot in $EquipmentSlotList) {
 		$displayname = $EquipmentSlot.displayname
 		If ($displayname -NotIn $Ignore) {
 			$resolve = Get-ItemResolve $EquipmentSlot.item.id $ServiceId
 			$temp = "{0:F0}" -f $resolve
 			$resolveLine += $temp.PadRight($MaxLength + 1," ")
+			$resolveLineCsv += "$temp,"
 		}
 	}
 
 	$resolveLine
+	$resolveLineCsv | Add-Content $CsvFileName
 }
