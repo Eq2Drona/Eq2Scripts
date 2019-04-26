@@ -67,7 +67,7 @@ function Get-CharacterInfo {
 	
 	$CharacterName = $CharacterName.ToLower()
 
-	$Url = "http://census.daybreakgames.com{0}/json/get/eq2/character/?locationdata.world={1}&name.first_lower={2}&c:show=name,stats,equipmentslot_list" -f $ServiceId, $ServerName,$CharacterName
+	$Url = "http://census.daybreakgames.com{0}/json/get/eq2/character/?locationdata.world={1}&name.first_lower={2}&c:resolve=equipmentslots&c:show=name,stats,equipmentslot_list" -f $ServiceId, $ServerName,$CharacterName
 
 	$Json = Invoke-WebRequest -Uri ($Url) | ConvertFrom-Json
 
@@ -126,7 +126,7 @@ foreach ($toonName  in $CharacterList) {
 	foreach ($EquipmentSlot in $EquipmentSlotList) {
 		$displayname = $EquipmentSlot.displayname
 		If ($displayname -NotIn $Ignore) {
-			$resolve = Get-ItemResolve $EquipmentSlot.item.id $ServiceId
+			$resolve = $EquipmentSlot.item.modifiers.resolve.value
 			$temp = "{0:F0}" -f $resolve
 			$resolveLine += $temp.PadRight($MaxLength + 1," ")
 			$resolveLineCsv += "$temp,"
